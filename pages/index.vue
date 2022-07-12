@@ -10,53 +10,25 @@
       </AppButton>
     </div>
 
-    <TransactionAddVue v-if="isAdding" @cancel="isAdding = false" @after-add="afterAdd" />
+    <TransactionAddVue v-if="isAdding" @cancel="isAdding = false" @store="afterAdd" />
 
-    <div class="mt-6 pb-6 flex items-center space-x-4 border-b border-gray-300">
-      <div>
-        <AppFormLabel>Descrição</AppFormLabel>
-        <AppFormInput />
-      </div>
+  <TransactionFilterVue @filter="onFilter" />
 
-      <div>
-        <AppFormLabel>Categoria</AppFormLabel>
-        <AppFormSelect :options="[{ name: 'Licença de softwares', id: 1 }]" />
-      </div>
-    </div>
-
-    <div class="flex items-center px-5 py-6 bg-white rounded-lg shadow">
-      {{ index }}
-
-      <div v-for="transaction in group" :key="transaction.id">
-        {{ transaction.description }}
-      </div>
-    </div>
-
-    <div class="mt-4">
-      <div class="space-y-8">
-        <div>
-          <div class="mb-1">
-            <div class="font-bold text-sm">
-              04 de Jan
-            </div>
-          </div>
-          <!-- ediction -->
-          
-        </div>
-
-        <div v-for="(group, index) in transactionGrouped" :key="index">
-          <div class="mb-1">
-            <div class="font-bold text-sm">
-              {{ formatDate(index) }}
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <TransactionVue v-for="transaction in group" :key="transaction.id" :transaction="transaction" />
-          </div>
+    <div v-for="(group, index) in transactionGrouped" :key="index">
+      <br />
+      <div class="mb-1">
+        <div class="font-bold text-sm">
+          {{ formatDate(index) }}
         </div>
       </div>
+
+      <div class="space-y-3">
+        <TransactionVue v-for="transaction in group" :key="transaction.id" :transaction="transaction"
+          @update="onUpdate" />
+      </div>
     </div>
+  </div>
+  </div>
   </div>
 
 </template>
@@ -66,6 +38,7 @@ import { groupBy, orderBy } from "lodash";
 
 import TransactionAddVue from '~/components/Transactions/TransactionAdd.vue';
 import TransactionVue from "~/components/Transactions/Transaction.vue";
+import TransactionFilterVue from "~/components/Transactions/TransactionFilter.vue";
 
 import AppButton from '~/components/Ui/AppButton';
 import AppFormInput from '~/components/Ui/AppFormInput';
@@ -82,6 +55,7 @@ export default {
     AppFormSelect,
     TransactionAddVue,
     TransactionVue,
+    TransactionFilterVue,
   },
 
   async asyncData({ store }) {
@@ -103,6 +77,19 @@ export default {
 
     afterAdd(transaction) {
       this.transactions.push(transaction);
+    },
+
+    onUpdate(transaction) {
+      console.log(`avo`);
+      const index = this.transactions.findIndex(obj => obj.id == transaction.id);
+      this.transactions.splice(index, 1, transaction);
+    },
+
+    onFilter(filter) {
+      this.$store.dispatch(`transactions/getTransactions`, filter)
+      .then((response) => {
+        this.transactions = response;
+      })
     }
   },
 

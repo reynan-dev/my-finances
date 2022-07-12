@@ -84,6 +84,12 @@ export default {
                 categoryId: 0,
             }  
             })
+            .then(() => {
+                this.$emit('after-add', {
+                    ...response,
+                    category: this.categories.find(obj => obj.id == this.form.categoryId)
+                    })
+            })
         },
         onCancel() {
             this.$emit('cancel');
